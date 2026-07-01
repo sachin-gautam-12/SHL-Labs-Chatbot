@@ -52,7 +52,7 @@ class EmbeddingClient:
             import google.generativeai as genai
             response = genai.embed_content(
                 model=self.model_name,
-                contents=text,
+                content=text,
                 task_type="RETRIEVAL_QUERY"
             )
             return response["embedding"]
@@ -65,12 +65,15 @@ class EmbeddingClient:
         """Generates embedding vectors for a list of document strings."""
         if self.embedding_type == "gemini":
             import google.generativeai as genai
-            response = genai.embed_content(
-                model=self.model_name,
-                contents=texts,
-                task_type="RETRIEVAL_DOCUMENT"
-            )
-            return response["embedding"]
+            embeddings = []
+            for text in texts:
+                response = genai.embed_content(
+                    model=self.model_name,
+                    content=text,
+                    task_type="RETRIEVAL_DOCUMENT"
+                )
+                embeddings.append(response["embedding"])
+            return embeddings
         if self.fallback_mode or self.local_model is None:
             return [self._fallback_embedding(text) for text in texts]
         embeddings = self.local_model.encode(texts, convert_to_numpy=True)
