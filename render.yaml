@@ -1,0 +1,25 @@
+# ==============================================================================
+# Render.com Infrastructure-as-Code (IaC) Blueprint Configuration
+# ==============================================================================
+
+services:
+  - type: web
+    name: shl-ai-recommender
+    runtime: docker
+    repo: https://github.com/your-username/shl-ai-recommender # User replaces this
+    plan: free # Can be scaled up based on requirements
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000 # Render default port
+      - key: LLM_PROVIDER
+        value: gemini
+      - key: EMBEDDING_TYPE
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false # Requires user configuration in Render dashboard
+      - key: OPENAI_API_KEY
+        sync: false # Optional
+    healthCheckPath: /health
+    restartPolicy: on-failure

@@ -1,0 +1,43 @@
+﻿
+   - 
+                                                                                                                        
+Name                            Id                              Version           Source
+------------------------------------------------------------------------------------------
+Python 3.12                     9NCVDN91XZQP                    Unknown           msstore
+Python 3.13                     9PNRBTZXMB4Z                    Unknown           msstore
+Python Install Manager          9NQ7512CXL7T                    Unknown           msstore
+Learn Python - Python Tutorial  9MX1038V03NJ                    Unknown           msstore
+InstantPython                   9WZDNCRDC1W5                    Unknown           msstore
+Interactive Python Course       9N9X6HL59P0G                    Unknown           msstore
+Learn Python Interactive Course 9P1JF7XJLNBN                    Unknown           msstore
+Python Tk Gui Builder           CarlWenrich.PythonTkGuiBuilder  1.0.0             winget
+MrPython                        FredericPeschanski.MrPython     5.2.0beta         winget
+IronPython 2                    Microsoft.IronPython.2          2.7.12.1000       winget
+IronPython 3                    Microsoft.IronPython.3          3.4.2.1000        winget
+SimpleCalcWithPython            MukunthP.R.SimpleCalcWithPython 1.0.0             winget
+Python Launcher                 OleksisFraga.PythonLauncher     2.1.0.0           winget
+Python Launcher                 Python.Launcher                 3.13.5            winget
+Python 2                        Python.Python.2                 2.7.18150         winget
+Python 3.0                      Python.Python.3.0               3.0.1             winget
+Python 3.1                      Python.Python.3.1               3.1.4             winget
+Python 3.10                     Python.Python.3.10              3.10.11           winget
+Python 3.11                     Python.Python.3.11              3.11.9            winget
+Python 3.12                     Python.Python.3.12              3.12.10           winget
+Python 3.13                     Python.Python.3.13              3.13.14           winget
+Python 3.14                     Python.Python.3.14              3.14.6            winget
+Python 3.2                      Python.Python.3.2               3.2.5             winget
+Python 3.3                      Python.Python.3.3               3.3.5             winget
+Python 3.4                      Python.Python.3.4               3.4.4             winget
+Python 3.5                      Python.Python.3.5               3.5.4             winget
+Python 3.6                      Python.Python.3.6               3.6.8             winget
+Python 3.7                      Python.Python.3.7               3.7.9             winget
+Python 3.8                      Python.Python.3.8               3.8.10            winget
+Python 3.9                      Python.Python.3.9               3.9.13            winget
+Python Install Manager          Python.PythonInstallManager     26.2.240.0        winget
+SomePythonThings Zip Manager    SomePythonThings.ZipManager     4.3               winget
+Python Launcher                 VinaySajip.PythonLauncher       1.0.1.6           winget
+Stackless Python                stackless.stackless             3.7.9150.0        winget
+winpython                       winpython.winpython             7.0.20231126final winget
+winpython-dot                   winpython.winpython-dot         6.4.20230625final winget
+winpython-dot-pypy              winpython.winpython-dot-pypy    3.8.12.3          winget
+winpython-pypy                  winpython.winpython-pypy        7.0.20231126final winget

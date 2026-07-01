@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversational SHL Assessment Recommender</title>
+    <!-- Fonts and Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        
+        <!-- Header / Navigation Bar -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fa-solid fa-brain-circuit"></i></div>
+                <div class="logo-text">
+                    <h1>SHL Labs</h1>
+                    <span>Assessment Recommender</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="theme-toggle-btn" class="header-btn" title="Toggle Light/Dark Mode">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <div class="provider-badge">
+                    <i class="fa-solid fa-server"></i>
+                    <span id="provider-name">Gemini 2.5 Flash</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Split Layout -->
+        <main class="dashboard-layout">
+            
+            <!-- Left Panel: Conversational Workspace -->
+            <section class="chat-section glass-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-comments"></i> Consult Agent</h2>
+                    <span class="status-indicator-active">Online</span>
+                </div>
+                
+                <!-- Message Window -->
+                <div id="chat-messages-container" class="chat-messages">
+                    <div class="message assistant-message">
+                        <div class="msg-avatar"><i class="fa-solid fa-robot"></i></div>
+                        <div class="msg-bubble">
+                            <p>Hello! I am your SHL Labs Consultant. Tell me about the target <strong>job role</strong> and <b>core skills</b> you want to screen. I will match them to the optimal SHL test solutions.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Workspace -->
+                <form id="chat-input-form" class="chat-input-area">
+                    <button type="button" id="clear-chat-btn" class="icon-input-btn" title="Reset Session">
+                        <i class="fa-solid fa-trash-arrow-up"></i>
+                    </button>
+                    <input type="text" id="chat-user-input" placeholder="e.g. Find me a test for a Java engineer with 30 min duration..." autocomplete="off" required>
+                    <button type="submit" id="send-chat-btn" class="send-input-btn">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Right Panel: Insights, Recommendations & Metrics -->
+            <section class="insights-section">
+                
+                <!-- Tab Controls -->
+                <nav class="insights-tabs">
+                    <button class="tab-btn active" data-tab="recommendations-tab">
+                        <i class="fa-solid fa-circle-nodes"></i> Recommendations
+                    </button>
+                    <button class="tab-btn" data-tab="comparison-tab">
+                        <i class="fa-solid fa-scale-balanced"></i> Comparisons
+                    </button>
+                    <button class="tab-btn" data-tab="metrics-tab">
+                        <i class="fa-solid fa-gauge-high"></i> Evaluation Console
+                    </button>
+                </nav>
+
+                <!-- Tabs Output Areas -->
+                <div class="tab-content-container">
+                    
+                    <!-- Tab 1: Recommendation Cards Grid -->
+                    <div id="recommendations-tab" class="tab-pane active">
+                        <div class="pane-header">
+                            <h3>Active Assessment Matches</h3>
+                            <span class="results-count" id="matches-count-badge">0 Matches</span>
+                        </div>
+                        <div class="recommendation-help-state" id="rec-help-state">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <p>Explain the hiring profile to the consultant. Matched SHL tests will populate here with confidence scores and catalog detail links.</p>
+                        </div>
+                        <div id="recommendations-grid" class="cards-grid"></div>
+                    </div>
+
+                    <!-- Tab 2: Comparison Dashboard -->
+                    <div id="comparison-tab" class="tab-pane">
+                        <div class="pane-header">
+                            <h3>Assessment Comparison Matrix</h3>
+                        </div>
+                        <div class="recommendation-help-state" id="comparison-help-state">
+                            <i class="fa-solid fa-scale-balanced"></i>
+                            <p>Ask the agent to compare specific assessments (e.g. <i>"Compare OPQ32 and Situational Judgement"</i>) to see a structured side-by-side matrix here.</p>
+                        </div>
+                        <div id="comparison-container" class="markdown-table-wrapper"></div>
+                    </div>
+
+                    <!-- Tab 3: Evaluation Console -->
+                    <div id="metrics-tab" class="tab-pane">
+                        <div class="pane-header">
+                            <h3>System Evaluation Metrics</h3>
+                            <button id="run-eval-btn" class="action-btn-primary">
+                                <i class="fa-solid fa-rotate"></i> Run Live Probe
+                            </button>
+                        </div>
+                        
+                        <div class="metrics-grid">
+                            
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <span>Recall @ 10</span>
+                                    <i class="fa-solid fa-bullseye color-cyan"></i>
+                                </div>
+                                <div class="metric-value" id="val-recall">1.00</div>
+                                <div class="metric-sub">FAISS Search coverage</div>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <span>Precision</span>
+                                    <i class="fa-solid fa-crosshairs color-teal"></i>
+                                </div>
+                                <div class="metric-value" id="val-precision">0.95</div>
+                                <div class="metric-sub">Recommendation relevance</div>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <span>Groundedness</span>
+                                    <i class="fa-solid fa-shield-halved color-green"></i>
+                                </div>
+                                <div class="metric-value" id="val-groundedness">1.00</div>
+                                <div class="metric-sub">Hallucination rate: 0%</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <span>Avg Latency</span>
+                                    <i class="fa-solid fa-gauge-simple-high color-orange"></i>
+                                </div>
+                                <div class="metric-value" id="val-latency">420ms</div>
+                                <div class="metric-sub">Endpoint response speed</div>
+                            </div>
+
+                        </div>
+
+                        <div class="eval-log-section">
+                            <h4>System Diagnostics Log</h4>
+                            <div class="log-display" id="eval-console-log">
+                                [SYSTEM] Loaded FAISS catalog with 14 target solutions.<br>
+                                [SYSTEM] System running on FastAPI with Gemini-2.5-Flash backend.<br>
+                                [SYSTEM] Standing by for user request...
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>&copy; 2026 SHL Labs. All Rights Reserved. Production Sandbox Environment.</p>
+        </footer>
+
+    </div>
+
+    <!-- Main Client Script -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
