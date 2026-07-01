@@ -6,7 +6,7 @@ services:
   - type: web
     name: shl-ai-recommender
     runtime: docker
-    repo: https://github.com/your-username/shl-ai-recommender # User replaces this
+    repo: https://github.com/sachin-gautam-12/-SHL-Labs-Chatbot # User replaces this
     plan: free # Can be scaled up based on requirements
     envVars:
       - key: HOST
