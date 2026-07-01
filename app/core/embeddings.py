@@ -2,10 +2,14 @@ import hashlib
 import logging
 import math
 import re
-from typing import List, Union
+from typing import List
+
+import google.generativeai as genai
+
 from app.config import settings
 
 logger = logging.getLogger(__name__)
+
 
 class EmbeddingClient:
     def __init__(self):
@@ -15,66 +19,102 @@ class EmbeddingClient:
 
         if self.embedding_type == "gemini":
             if not settings.GEMINI_API_KEY:
-                raise ValueError("GEMINI_API_KEY must be provided for Gemini Embeddings")
-            import google.generativeai as genai
+                raise ValueError("GEMINI_API_KEY must be provided")
+
             genai.configure(api_key=settings.GEMINI_API_KEY)
-            self.model_name = "models/text-embedding-004"
-            logger.info("Initialized Gemini Embeddings client")
+
+            # Compatible model
+            self.model_name = "models/embedding-001"
+
+            logger.info("Gemini Embedding Client Initialized")
+
         elif self.embedding_type == "local":
-            logger.info("Initializing local SentenceTransformers client (this might take a few seconds)...")
             try:
                 from sentence_transformers import SentenceTransformer
-                self.local_model = SentenceTransformer("all-MiniLM-L6-v2")
-                logger.info("Initialized local SentenceTransformers (all-MiniLM-L6-v2)")
-            except Exception as exc:
-                logger.warning("Falling back to lightweight text embeddings because local SentenceTransformers could not be loaded: %s", exc)
+
+                self.local_model = SentenceTransformer(
+                    "all-MiniLM-L6-v2"
+                )
+
+                logger.info("Local embedding model loaded.")
+
+            except Exception as e:
+                logger.warning(
+                    "Falling back to hash embeddings: %s", e
+                )
                 self.fallback_mode = True
+
         else:
-            raise ValueError(f"Unknown embedding type: {self.embedding_type}")
+            raise ValueError("Unknown embedding type")
 
     def _fallback_embedding(self, text: str) -> List[float]:
         tokens = re.findall(r"\w+", text.lower())
+
         vector = [0.0] * 384
-        if not tokens:
-            return vector
+
         for token in tokens:
-            digest = int(hashlib.sha256(token.encode("utf-8")).hexdigest()[:8], 16)
-            index = digest % len(vector)
-            vector[index] += 1.0
-        magnitude = math.sqrt(sum(value * value for value in vector))
-        if magnitude:
-            vector = [value / magnitude for value in vector]
+            digest = int(
+                hashlib.sha256(token.encode()).hexdigest()[:8],
+                16,
+            )
+
+            vector[digest % 384] += 1.0
+
+        norm = math.sqrt(sum(v * v for v in vector))
+
+        if norm != 0:
+            vector = [v / norm for v in vector]
+
         return vector
 
     def embed_query(self, text: str) -> List[float]:
-        """Generates embedding vector for a query string."""
+
         if self.embedding_type == "gemini":
-            import google.generativeai as genai
+
             response = genai.embed_content(
                 model=self.model_name,
-                content=text,
-                task_type="RETRIEVAL_QUERY"
+                content=text
             )
-            return response["embedding"]
-        if self.fallback_mode or self.local_model is None:
-            return self._fallback_embedding(text)
-        embedding = self.local_model.encode(text, convert_to_numpy=True)
-        return embedding.tolist()
 
-    def embed_documents(self, texts: List[str]) -> List[List[float]]:
-        """Generates embedding vectors for a list of document strings."""
+            return response["embedding"]
+
+        if self.fallback_mode:
+            return self._fallback_embedding(text)
+
+        return self.local_model.encode(
+            text,
+            convert_to_numpy=True
+        ).tolist()
+
+    def embed_documents(
+        self,
+        texts: List[str]
+    ) -> List[List[float]]:
+
         if self.embedding_type == "gemini":
-            import google.generativeai as genai
+
             embeddings = []
+
             for text in texts:
+
                 response = genai.embed_content(
                     model=self.model_name,
-                    content=text,
-                    task_type="RETRIEVAL_DOCUMENT"
+                    content=text
                 )
-                embeddings.append(response["embedding"])
+
+                embeddings.append(
+                    response["embedding"]
+                )
+
             return embeddings
-        if self.fallback_mode or self.local_model is None:
-            return [self._fallback_embedding(text) for text in texts]
-        embeddings = self.local_model.encode(texts, convert_to_numpy=True)
-        return embeddings.tolist()
+
+        if self.fallback_mode:
+            return [
+                self._fallback_embedding(t)
+                for t in texts
+            ]
+
+        return self.local_model.encode(
+            texts,
+            convert_to_numpy=True
+        ).tolist()
