@@ -1,250 +1,325 @@
-SHL AI Recommender System
-Conversational SHL Assessment Recommender
+SHL AI Assessment Recommender
+
 Version: 1.0
-Last updated: January 2026
+Last Updated: July 2026
 
-📋 Overview
-This project implements a Conversational SHL Assessment Recommender that helps hiring managers and recruiters find the right SHL assessments through natural dialogue. The agent handles vague intent, clarifies requirements, supports refinements, and compares assessments—all grounded in the actual SHL catalog.
+A production-ready, conversational AI system that recommends SHL Individual Assessment Solutions using Retrieval-Augmented Generation (RAG), FastAPI, FAISS, and LLM-powered dialogue management.
 
-🎯 Problem Statement
-Hiring managers often struggle with assessment selection because:
-They don't know the right vocabulary initially
-Most catalogs require keyword search/faceted filtering
-Assessment selection becomes slow and inefficient
-Solution: A conversational agent that guides users from vague intent to a grounded shortlist of SHL assessments through natural dialogue.
+The system helps recruiters and hiring managers identify the most appropriate SHL assessments through natural conversation while ensuring every recommendation is grounded exclusively in the official SHL assessment catalog.
 
-✨ Key Features
-1. Conversational Capabilities
-Clarification: Asks follow-up questions for vague queries
-Recommendation: Provides 1-10 grounded assessment suggestions
-Refinement: Updates recommendations based on user feedback
-Comparison: Compares assessments using catalog data
+Overview
 
-2. Security & Guardrails
-Prompt injection detection and prevention
-Off-topic query filtering
-System prompt protection
-Rate limiting
+Traditional assessment catalogs rely heavily on keyword searches and manual filtering, making it difficult for recruiters who are unsure of the exact assessments they need.
 
-3. RAG Pipeline
-Semantic search over SHL catalog
-FAISS vector indexing
-Heuristic reranking
-Grounded response generation
+This project solves that challenge by providing an intelligent conversational assistant capable of:
 
-🏗️ Architecture
-text
-┌─────────────────────────────────────────────────────────────┐
-│                    Frontend (Dashboard)                     │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────────┐
-│                    FastAPI Backend                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌───────────────────┐ │
-│  │ /health      │  │ /chat        │  │  Request/Response │ │
-│  └──────────────┘  └──────────────┘  └───────────────────┘ │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────────┐
-│                    Core Processing                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌───────────────────┐ │
-│  │ Retriever    │  │ Recommender  │  │ Comparator        │ │
-│  └──────────────┘  └──────────────┘  └───────────────────┘ │
-│  ┌──────────────┐  ┌──────────────┐  ┌───────────────────┐ │
-│  │ Reranker     │  │ Guardrails   │  │ Conversation      │ │
-│  └──────────────┘  └──────────────┘  └───────────────────┘ │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────────┐
-│                    Data Layer                               │
-│  ┌──────────────┐  ┌──────────────┐  ┌───────────────────┐ │
-│  │ Catalog      │  │ FAISS Index  │  │ Embeddings        │ │
-│  └──────────────┘  └──────────────┘  └───────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
+Understanding hiring requirements through natural conversation
+Asking clarifying questions before making recommendations
+Recommending relevant SHL assessments
+Refining recommendations when requirements change
+Comparing assessments using catalog evidence
+Preventing hallucinations and prompt injection attacks
+Returning only official SHL catalog recommendations
+Key Features
+Conversational AI
+Natural language understanding
+Multi-turn conversations
+Clarification of vague requirements
+Context-aware recommendation generation
+Conversation refinement
+Assessment comparison
+Stateless API design
+Retrieval-Augmented Generation (RAG)
 
-💻 Technology Stack
+The recommendation engine uses a complete Retrieval-Augmented Generation pipeline.
 
-Component	Technology
-Backend	Python 3.12+, FastAPI
-LLM	Gemini 2.0 Flash (configurable)
+SHL Product Catalog
+        │
+        ▼
+Data Processing
+        │
+        ▼
+Chunk Generation
+        │
+        ▼
+Sentence Embeddings
+        │
+        ▼
+FAISS Vector Index
+        │
+        ▼
+Semantic Retrieval
+        │
+        ▼
+Reranking
+        │
+        ▼
+LLM Response Generation
+Security
+
+The application includes multiple security layers.
+
+Prompt Injection Detection
+System Prompt Protection
+Role Injection Prevention
+Jailbreak Detection
+Off-topic Query Refusal
+Catalog-only Recommendations
+Safe Response Generation
+Project Architecture
+Frontend Dashboard
+        │
+        ▼
+FastAPI Backend
+        │
+ ┌──────┴────────┐
+ │               │
+Health API    Chat API
+ │               │
+ └──────┬────────┘
+        │
+Conversation Engine
+        │
+ ┌──────┼─────────────────────────────┐
+ │      │             │               │
+Retriever   Recommender   Comparator   Prompt Guard
+        │
+        ▼
+RAG Pipeline
+        │
+Embeddings
+        │
+FAISS Vector Database
+        │
+SHL Assessment Catalog
+Technology Stack
+Category	Technology
+Language	Python 3.12
+Backend	FastAPI
+LLM	Gemini 2.5 Flash (Configurable)
 Vector Search	FAISS
 Embeddings	Sentence Transformers
-Data Validation	Pydantic
-Frontend	HTML5/CSS3/JavaScript
-Containerization	Docker
+Prompt Framework	LangChain Core
+Web Scraping	BeautifulSoup
+Validation	Pydantic
+Frontend	HTML5, CSS3, JavaScript
 Deployment	Render
-
-📡 API Specification
-1. Health Check
-text
+Containerization	Docker
+API Specification
+Health Check
+Request
 GET /health
-Response:
-
-json
+Response
 {
   "status": "ok"
 }
-
-3. Chat Endpoint
-text
+Chat Endpoint
+Request
 POST /chat
-
-Request:
-json
 {
   "messages": [
-    {"role": "user", "content": "Hiring a Java developer who works with stakeholders"},
-    {"role": "assistant", "content": "Sure. What is seniority level?"},
-    {"role": "user", "content": "Mid-level, around 4 years"}
+    {
+      "role": "user",
+      "content": "Hiring a Java Developer"
+    }
   ]
 }
-Response:
-
-json
+Response
 {
-  "reply": "Got it. Here are 5 assessments that fit...",
+  "reply": "Based on your requirements, here are suitable SHL assessments.",
   "recommendations": [
     {
       "name": "Java 8 (New)",
       "url": "https://www.shl.com/...",
-      "test_type": "K"
+      "test_type": "Knowledge"
     }
   ],
   "end_of_conversation": false
 }
+Conversation Capabilities
 
-🚀 Installation & Setup
-Prerequisites
-Python 3.12+
-Gemini API Key
-Local Development
+The assistant supports the following behaviors:
 
-bash
-# Clone repository
-git clone https://github.com/yourusername/shl-ai-recommender.git
-cd shl-ai-recommender
+Clarification of vague hiring requirements
+Context-aware assessment recommendations
+Mid-conversation refinement
+Assessment comparison
+Multi-turn dialogue
+Stateless conversation processing
+Graceful refusal of unsupported requests
+Prompt Injection Protection
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+The system detects and rejects common prompt injection attacks, including:
 
-# Install dependencies
-pip install -r requirements.txt
+Ignore previous instructions
+Reveal system prompt
+Developer mode requests
+Jailbreak attempts
+Role override attacks
+Prompt extraction requests
+Hidden instruction injection
 
-# Configure environment
-cp .env.example .env
-# Edit .env with your API keys
+All suspicious requests receive safe refusal responses while maintaining normal conversation flow.
 
-# Build FAISS index
-python -c "from app.core.retriever import Retriever; Retriever().initialize(force_rebuild=True)"
+SHL Catalog Processing
 
-# Run application
-uvicorn app.main:app --reload
-Docker Deployment
-bash
-# Build image
-docker build -t shl-recommender .
+The application automatically processes the SHL Individual Test Solutions catalog.
 
-# Run container
-docker run -p 8000:8000 --env-file .env shl-recommender
-📊 Evaluation Metrics
-Metric	Target	Status
-Recall@10	>0.90	✅ 0.93
-Precision	>0.85	✅ 0.88
-Hallucination Rate	<0.05	✅ 0.00
-Groundedness	>0.90	✅ 0.95
-Conversation Success	>0.90	✅ 0.94
-Latency	<3s	✅ 1.2s
-🧪 Testing
-bash
-# Run all tests
-python -m pytest tests/
+Each assessment stores:
 
-# Run with coverage
-python -m pytest tests/ --cov=app --cov-report=html
-
-# Generate evaluation report
-python app/core/evaluator.py
-📁 Project Structure
-text
+Assessment Name
+Description
+Official SHL URL
+Test Category
+Test Type
+Skills Measured
+Duration
+Languages
+Remote Availability
+Adaptive Testing Support
+Recommended Job Roles
+Project Structure
 shl-ai-recommender/
+│
 ├── app/
-│   ├── api/              # Endpoints (/health, /chat)
-│   ├── core/             # Business logic
-│   │   ├── retriever.py  # FAISS search
-│   │   ├── recommender.py # Scoring engine
-│   │   ├── conversation.py # Dialogue management
-│   │   ├── llm_client.py # LLM wrapper
-│   │   ├── prompt_injection.py # Security
-│   │   └── evaluator.py  # Evaluation metrics
-│   ├── models/           # Pydantic schemas
-│   └── config.py         # Configuration
+│   ├── api/
+│   ├── core/
+│   ├── models/
+│   ├── utils/
+│   ├── config.py
+│   └── main.py
+│
 ├── data/
-│   ├── shl_catalog.json  # Assessment data
-│   └── faiss.index       # Vector index
-├── frontend/             # Dashboard
-├── tests/                # Test suite
+│   ├── shl_catalog.json
+│   └── faiss.index
+│
+├── frontend/
+│
+├── tests/
+│
 ├── Dockerfile
 ├── render.yaml
 ├── requirements.txt
-└── README.md
+├── README.md
+└── report.pdf
+Installation
 
-🔒 Security Features
-Prompt Injection Detection
-Pattern-based detection (regex)
-Semantic analysis
-Polite refusal responses
-Off-Topic Filtering
-General hiring advice (refused)
-Legal questions (refused)
-Non-SHL topics (refused)
+Clone the repository.
 
-🐳 Deployment Options
+git clone https://github.com/sachin-gautam-12/shl-ai-recommender.git
+cd shl-ai-recommender
+
+Create a virtual environment.
+
+python -m venv .venv
+
+Activate the environment.
+
+Windows
+
+.venv\Scripts\activate
+
+Linux/macOS
+
+source .venv/bin/activate
+
+Install dependencies.
+
+pip install -r requirements.txt
+
+Create a .env file.
+
+GEMINI_API_KEY=your_api_key
+LLM_PROVIDER=gemini
+EMBEDDING_MODEL=all-MiniLM-L6-v2
+
+Run the application.
+
+uvicorn app.main:app --reload
+Deployment
+
+The project supports deployment on:
+
 Render
-yaml
-# render.yaml
-services:
-  - type: web
-    name: shl-ai-recommender
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+Railway
+Fly.io
 Docker
-dockerfile
-FROM python:3.12-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+Hugging Face Spaces
 
-📝 Submission Requirements
-Required Materials
-Public API endpoint (deployed on Render/Fly/Railway)
-Approach document (2 pages max):
-Design choices
-Retrieval setup
-Prompt design
-Evaluation approach
-What didn't work
-Grading Criteria
-Hard evals (must pass): Schema compliance, catalog-only items
-Recall@10: Mean across conversation traces
-Behavior probes: Refusal handling, clarification, refinement
+Docker deployment:
 
-📚 Resources
-SHL Catalog: https://www.shl.com/solutions/products/product-catalog/
-Conversation Traces: Download ZIP
-Submission Form: Link to Form
+docker build -t shl-ai-recommender .
+docker run -p 8000:8000 shl-ai-recommender
+Testing
 
-📞 Contact
-Developer: Sachin Kumar Singh
-Email: your.email@example.com
+Run all automated tests.
+
+pytest tests/
+
+Generate evaluation metrics.
+
+python app/core/evaluator.py
+
+The test suite validates:
+
+API schema
+Clarification flow
+Recommendation quality
+Conversation refinement
+Assessment comparison
+Prompt injection handling
+Invalid requests
+Empty requests
+Response validation
+Evaluation Metrics
+
+The evaluation framework measures:
+
+Recall@10
+Precision
+Recommendation Accuracy
+Groundedness
+Hallucination Rate
+Latency
+Conversation Success Rate
+Behavior Probe Success
+Compliance Checklist
+Requirement	Status
+FastAPI Service	✅
+GET /health	✅
+POST /chat	✅
+Stateless API	✅
+Clarification Questions	✅
+Assessment Recommendations	✅
+Recommendation Refinement	✅
+Assessment Comparison	✅
+Prompt Injection Protection	✅
+Catalog-only Responses	✅
+RAG Implementation	✅
+FAISS Vector Search	✅
+Evaluation Framework	✅
+Docker Support	✅
+Render Deployment	✅
+Future Improvements
+Automatic catalog synchronization
+Hybrid search (semantic + keyword)
+Cross-encoder reranking
+Redis response caching
+Streaming responses
+Enhanced analytics dashboard
+Multi-language support
+Developer
+
+Sachin Kumar Singh
+
+B.Tech – Computer Science & Engineering
+
+Email: sk7505875@gmail.com
+
 GitHub: https://github.com/sachin-gautam-12
-Live Demo: https://shl-ai-recommender.onrender.com
 
-📄 License
-MIT License - See LICENSE for details.
+LinkedIn: https://www.linkedin.com/in/sachin-kumar-singh-5a193522a/
 
-Version: 1.0 | Last updated: January 2026
-© 2026 SHL and its affiliates. All rights reserved.
+License
+
+This project is licensed under the MIT License.
