@@ -61,7 +61,9 @@ text
 │  │ Catalog      │  │ FAISS Index  │  │ Embeddings        │ │
 │  └──────────────┘  └──────────────┘  └───────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
+
 💻 Technology Stack
+
 Component	Technology
 Backend	Python 3.12+, FastAPI
 LLM	Gemini 2.0 Flash (configurable)
@@ -77,14 +79,16 @@ Deployment	Render
 text
 GET /health
 Response:
+
 json
 {
   "status": "ok"
 }
 
-2. Chat Endpoint
+3. Chat Endpoint
 text
 POST /chat
+
 Request:
 json
 {
