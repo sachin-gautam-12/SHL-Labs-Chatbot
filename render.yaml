@@ -7,12 +7,12 @@ services:
     name: shl-ai-recommender
     runtime: docker
     repo: https://github.com/sachin-gautam-12/-SHL-Labs-Chatbot # User replaces this
-    plan: free # Can be scaled up based on requirements
+    plan: free
     envVars:
       - key: HOST
         value: 0.0.0.0
-      - key: PORT
-        value: 10000 # Render default port
+      - key: RENDER
+        value: "true"
       - key: LLM_PROVIDER
         value: gemini
       - key: EMBEDDING_TYPE

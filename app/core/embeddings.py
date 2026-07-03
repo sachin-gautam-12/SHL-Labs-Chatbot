@@ -12,108 +12,93 @@ logger = logging.getLogger(__name__)
 class EmbeddingClient:
     def __init__(self):
         self.embedding_type = settings.EMBEDDING_TYPE.lower()
-        self.local_model = None
         self.fallback_mode = False
 
         if self.embedding_type == "gemini":
             if not settings.GEMINI_API_KEY:
-                raise ValueError("GEMINI_API_KEY must be provided")
-
-            import google.generativeai as genai
-            genai.configure(api_key=settings.GEMINI_API_KEY)
-
-            # Compatible model
-            self.model_name = "models/embedding-001"
-
-            logger.info("Gemini Embedding Client Initialized")
-
-        elif self.embedding_type == "local":
-            try:
-                from sentence_transformers import SentenceTransformer
-
-                self.local_model = SentenceTransformer(
-                    "all-MiniLM-L6-v2"
-                )
-
-                logger.info("Local embedding model loaded.")
-
-            except Exception as e:
-                logger.warning(
-                    "Falling back to hash embeddings: %s", e
-                )
+                logger.warning("GEMINI_API_KEY is missing. Falling back to local hash embeddings.")
                 self.fallback_mode = True
-
+            else:
+                try:
+                    import google.generativeai as genai
+                    genai.configure(api_key=settings.GEMINI_API_KEY)
+                    # Use the latest supported Gemini embedding model
+                    self.model_name = "models/text-embedding-004"
+                    logger.info("Gemini Embedding Client Initialized.")
+                except Exception as e:
+                    logger.error(f"Failed to initialize Gemini embedding client: {e}")
+                    self.fallback_mode = True
+        elif self.embedding_type == "local":
+            logger.info("Local ML embeddings have been disabled to prevent memory overflow on Free Tier. Falling back to fast hash embeddings.")
+            self.fallback_mode = True
         else:
-            raise ValueError("Unknown embedding type")
+            raise ValueError(f"Unknown embedding type: {self.embedding_type}")
 
     def _fallback_embedding(self, text: str) -> List[float]:
+        """A deterministic fast hash embedding to be used when offline or out of memory."""
         tokens = re.findall(r"\w+", text.lower())
-
-        vector = [0.0] * 384
-
+        # Use 768 dimensions to match Gemini embedding size roughly (Gemini is 768)
+        vector = [0.0] * 768
         for token in tokens:
-            digest = int(
-                hashlib.sha256(token.encode()).hexdigest()[:8],
-                16,
-            )
-
-            vector[digest % 384] += 1.0
+            digest = int(hashlib.sha256(token.encode()).hexdigest()[:8], 16)
+            vector[digest % 768] += 1.0
 
         norm = math.sqrt(sum(v * v for v in vector))
-
         if norm != 0:
             vector = [v / norm for v in vector]
-
         return vector
 
     def embed_query(self, text: str) -> List[float]:
-
-        if self.embedding_type == "gemini":
-            import google.generativeai as genai
-            response = genai.embed_content(
-                model=self.model_name,
-                content=text
-            )
-
-            return response["embedding"]
-
-        if self.fallback_mode:
-            return self._fallback_embedding(text)
-
-        return self.local_model.encode(
-            text,
-            convert_to_numpy=True
-        ).tolist()
-
-    def embed_documents(
-        self,
-        texts: List[str]
-    ) -> List[List[float]]:
-
-        if self.embedding_type == "gemini":
-            import google.generativeai as genai
-            embeddings = []
-
-            for text in texts:
+        if not self.fallback_mode:
+            try:
                 import google.generativeai as genai
                 response = genai.embed_content(
                     model=self.model_name,
                     content=text
                 )
+                return response["embedding"]
+            except Exception as e:
+                logger.error(f"Gemini API embed_query failed: {e}. Using fallback.")
+                
+        return self._fallback_embedding(text)
 
-                embeddings.append(
-                    response["embedding"]
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        if not self.fallback_mode:
+            try:
+                import google.generativeai as genai
+                # Batch request if supported, or loop carefully.
+                # google.generativeai embed_content supports a list of strings
+                response = genai.embed_content(
+                    model=self.model_name,
+                    content=texts
                 )
-
+                
+                # if response contains 'embedding' and it's a list of lists:
+                if isinstance(response, dict) and "embedding" in response:
+                    return response["embedding"]
+                elif isinstance(response, list) and len(response) > 0 and "embedding" in response[0]:
+                    # Some versions return a list of dicts for batched
+                    return [item["embedding"] for item in response]
+                else:
+                    logger.warning("Unexpected response format from batch embedding. Generating one by one.")
+                    
+            except Exception as e:
+                logger.error(f"Gemini API batch embed_documents failed: {e}. Falling back to single requests.")
+                
+            # If batching failed or returned unexpectedly, fallback to single requests
+            embeddings = []
+            import google.generativeai as genai
+            for text in texts:
+                try:
+                    response = genai.embed_content(
+                        model=self.model_name,
+                        content=text
+                    )
+                    embeddings.append(response["embedding"])
+                except Exception as e:
+                    logger.error(f"Failed to embed document via Gemini: {e}")
+                    embeddings.append(self._fallback_embedding(text))
             return embeddings
 
-        if self.fallback_mode:
-            return [
-                self._fallback_embedding(t)
-                for t in texts
-            ]
-
-        return self.local_model.encode(
-            texts,
-            convert_to_numpy=True
-        ).tolist()
+        # Fallback offline path
+        return [self._fallback_embedding(t) for t in texts]

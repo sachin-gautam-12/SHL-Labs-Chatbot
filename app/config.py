@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     EMBEDDING_TYPE: str = Field(default="gemini", description="Embedding type: gemini or local")
 
     # Model Configurations
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MODEL: str = "gemini-1.5-flash"
     OPENAI_MODEL: str = "gpt-4o-mini"
 
     # API Keys

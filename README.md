@@ -1,442 +1,52 @@
 # SHL AI Assessment Recommender
 
-> **Production-ready Conversational AI for recommending SHL Individual Assessment Solutions using Retrieval-Augmented Generation (RAG).**
-
-![Python](https://img.shields.io/badge/Python-3.12-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-Production-green)
-![FAISS](https://img.shields.io/badge/Vector%20Search-FAISS-orange)
-![License](https://img.shields.io/badge/License-MIT-yellow)
-![Deployment](https://img.shields.io/badge/Deploy-Render-purple)
-
-**Version:** 1.0
-**Last Updated:** July 2026
-
----
-
-# Overview
-
-The **SHL AI Assessment Recommender** is a production-ready conversational AI application that helps recruiters and hiring managers identify the most appropriate **SHL Individual Assessment Solutions** through natural language conversations.
-
-Unlike traditional assessment catalogs that rely on keyword searches and manual filtering, this application understands hiring requirements, asks intelligent follow-up questions, retrieves relevant assessments using Retrieval-Augmented Generation (RAG), and provides recommendations grounded exclusively in the official SHL assessment catalog.
-
-The system is designed to be scalable, secure, and deployment-ready.
-
----
-
-# Features
-
-## Conversational AI
-
-* Natural language understanding
-* Multi-turn conversations
-* Clarifying questions for incomplete requirements
-* Context-aware recommendations
-* Recommendation refinement
-* Assessment comparison
-* Stateless conversation management
-
----
-
-## Retrieval-Augmented Generation (RAG)
-
-The recommendation engine follows a complete RAG pipeline:
-
-```text
-SHL Product Catalog
-        │
-        ▼
-Data Processing
-        │
-        ▼
-Chunk Generation
-        │
-        ▼
-Sentence Embeddings
-        │
-        ▼
-FAISS Vector Index
-        │
-        ▼
-Semantic Retrieval
-        │
-        ▼
-Reranking
-        │
-        ▼
-LLM Response Generation
-```
-
----
-
-# Security
-
-The application includes multiple protection layers against malicious prompts.
-
-* Prompt Injection Detection
-* System Prompt Protection
-* Jailbreak Prevention
-* Role Injection Detection
-* Prompt Extraction Prevention
-* Off-topic Query Refusal
-* Catalog-only Recommendations
-* Safe Response Generation
-
----
-
-# Architecture
-
-```text
-Frontend Dashboard
-        │
-        ▼
-FastAPI Backend
-        │
- ┌──────┴────────┐
- │               │
-Health API    Chat API
-        │
-        ▼
-Conversation Engine
-        │
- ┌──────┼─────────────────────────┐
- │      │         │              │
-Retriever Recommender Comparator Prompt Guard
-        │
-        ▼
-RAG Pipeline
-        │
-Embeddings
-        │
-FAISS Vector Database
-        │
-SHL Assessment Catalog
-```
-
----
-
-# Technology Stack
-
-| Category         | Technology                      |
-| ---------------- | ------------------------------- |
-| Language         | Python 3.12                     |
-| Backend          | FastAPI                         |
-| LLM              | Gemini 2.5 Flash (Configurable) |
-| Vector Search    | FAISS                           |
-| Embeddings       | Sentence Transformers           |
-| Prompt Framework | LangChain Core                  |
-| Web Scraping     | BeautifulSoup                   |
-| Validation       | Pydantic                        |
-| Frontend         | HTML5, CSS3, JavaScript         |
-| Deployment       | Render                          |
-| Containerization | Docker                          |
-
----
-
-# API Endpoints
-
-## Health Check
-
-**GET**
-
-```http
-/health
-```
-
-Response
-
-```json
-{
-  "status": "ok"
-}
-```
-
----
-
-## Chat Endpoint
-
-**POST**
-
-```http
-/chat
-```
-
-Example Request
-
-```json
-{
-  "messages": [
-    {
-      "role": "user",
-      "content": "Hiring a Java Developer"
-    }
-  ]
-}
-```
-
-Example Response
-
-```json
-{
-  "reply": "Based on your requirements, here are suitable SHL assessments.",
-  "recommendations": [
-    {
-      "name": "Java 8 (New)",
-      "url": "https://www.shl.com/...",
-      "test_type": "Knowledge"
-    }
-  ],
-  "end_of_conversation": false
-}
-```
-
----
-
-# Conversation Capabilities
-
-The assistant supports:
-
-* Clarification of hiring requirements
-* Context-aware assessment recommendations
-* Mid-conversation refinement
-* Assessment comparison
-* Stateless conversations
-* Safe refusal of unsupported requests
-
----
-
-# Prompt Injection Protection
-
-The system detects and safely rejects:
-
-* Ignore previous instructions
-* Reveal system prompt
-* Developer mode requests
-* Jailbreak attempts
-* Role override attacks
-* Prompt extraction
-* Hidden instruction injection
-
-All suspicious prompts receive safe refusal responses while maintaining a secure conversation.
-
----
-
-# SHL Catalog Processing
-
-Each assessment contains:
-
-* Assessment Name
-* Description
-* Official SHL URL
-* Test Category
-* Test Type
-* Skills Measured
-* Duration
-* Languages
-* Remote Availability
-* Adaptive Testing Support
-* Recommended Job Roles
-
----
-
-# Project Structure
-
-```text
-shl-ai-recommender/
-│
-├── app/
-│   ├── api/
-│   ├── core/
-│   ├── models/
-│   ├── utils/
-│   ├── config.py
-│   └── main.py
-│
-├── data/
-│   ├── shl_catalog.json
-│   └── faiss.index
-│
-├── frontend/
-├── tests/
-├── Dockerfile
-├── render.yaml
-├── requirements.txt
-├── README.md
-└── report.pdf
-```
-
----
-
-# Installation
-
-Clone the repository
-
-```bash
-git clone https://github.com/sachin-gautam-12/SHL-Labs-Chatbot.git
-cd SHL-Labs-Chatbot
-```
-
-Create a virtual environment
-
-```bash
-python -m venv .venv
-```
-
-Activate the environment
-
-Windows
-
-```bash
-.venv\Scripts\activate
-```
-
-Linux/macOS
-
-```bash
-source .venv/bin/activate
-```
-
-Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-Create a `.env` file
-
-```env
-GEMINI_API_KEY=your_api_key
-LLM_PROVIDER=gemini
-EMBEDDING_MODEL=all-MiniLM-L6-v2
-```
-
-Run the application
-
-```bash
-uvicorn app.main:app --reload
-```
-
-Open Swagger UI
-
-```
-http://127.0.0.1:8000/docs
-```
-
----
-
-# Deployment
-
-Supported deployment platforms:
-
-* Render
-* Railway
-* Fly.io
-* Docker
-* Hugging Face Spaces
-
-Docker
-
-```bash
-docker build -t shl-ai-recommender .
-docker run -p 8000:8000 shl-ai-recommender
-```
-
----
-
-# Testing
-
-Run all tests
-
-```bash
-pytest tests/
-```
-
-Generate evaluation metrics
-
-```bash
-python app/core/evaluator.py
-```
-
-The test suite validates:
-
-* API schema
-* Clarification flow
-* Recommendation quality
-* Conversation refinement
-* Assessment comparison
-* Prompt injection handling
-* Invalid requests
-* Empty requests
-* Response validation
-
----
-
-# Evaluation Metrics
-
-The evaluation framework measures:
-
-* Recall@10
-* Precision
-* Recommendation Accuracy
-* Groundedness
-* Hallucination Rate
-* Latency
-* Conversation Success Rate
-* Behavior Probe Success
-
----
-
-# Compliance Checklist
-
-| Requirement                 | Status |
-| --------------------------- | :----: |
-| FastAPI Service             |    ✅   |
-| GET /health                 |    ✅   |
-| POST /chat                  |    ✅   |
-| Stateless API               |    ✅   |
-| Clarification Questions     |    ✅   |
-| Assessment Recommendations  |    ✅   |
-| Recommendation Refinement   |    ✅   |
-| Assessment Comparison       |    ✅   |
-| Prompt Injection Protection |    ✅   |
-| Catalog-only Responses      |    ✅   |
-| RAG Implementation          |    ✅   |
-| FAISS Vector Search         |    ✅   |
-| Evaluation Framework        |    ✅   |
-| Docker Support              |    ✅   |
-| Render Deployment           |    ✅   |
-
----
-
-# Future Improvements
-
-* Automatic SHL catalog synchronization
-* Hybrid Search (Semantic + Keyword)
-* Cross-Encoder Reranking
-* Redis Caching
-* Streaming Responses
-* Analytics Dashboard
-* Multi-language Support
-
----
-
-# Developer
-
-**Sachin Kumar Singh**
-
-B.Tech – Computer Science & Engineering
-
-**Email:** [sk7505875@gmail.com](mailto:sk7505875@gmail.com)
-
-**GitHub:** https://github.com/sachin-gautam-12
-
-**LinkedIn:** https://www.linkedin.com/in/sachin-kumar-singh-5a193522a/
-
----
-
-# License
-
-This project is licensed under the **MIT License**.
-
----
-
-## If you find this project useful, consider giving it a ⭐ on GitHub.
+Conversational AI system that recommends SHL Individual Assessment Solutions using RAG.
+
+## Project Architecture
+
+- **Backend**: FastAPI (Python 3.12)
+- **AI Models**: Google Gemini (`gemini-1.5-flash` for chat, `text-embedding-004` for vectors)
+- **Vector DB**: FAISS (In-memory/Disk Cached)
+- **Frontend**: HTML5, Vanilla CSS, JS
+
+## Deployment on Render (Free Tier Optimized)
+
+This project has been heavily optimized to deploy successfully on the Render Free Tier (512MB RAM). Local ML models (PyTorch/SentenceTransformers) have been removed, and FAISS indexing is disk-cached to ensure instant startups and avoid memory overflow.
+
+### Deployment Steps
+1. Create a new **Web Service** on Render.
+2. Connect your GitHub repository.
+3. Select **Docker** as the Runtime.
+4. Set the Instance Type to **Free** (512MB RAM).
+
+### Required Environment Variables
+Add the following in your Render dashboard under "Environment":
+- `GEMINI_API_KEY`: Your Google Gemini API Key (Required)
+- `LLM_PROVIDER`: `gemini`
+- `EMBEDDING_TYPE`: `gemini`
+- `RENDER`: `true` (skips slow background scraping during startup)
+
+*Note: PORT is automatically assigned by Render and injected into the Dockerfile.*
+
+## Local Installation
+
+1. Create a virtual environment:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Set up environment variables:
+   Copy `.env.example` to `.env` and insert your API keys.
+4. Run the server:
+   ```bash
+   uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+   ```
+
+## Troubleshooting
+
+- **512MB RAM Crash on Render**: Ensure you are not attempting to load PyTorch or local ML models. The `requirements.txt` should strictly use `faiss-cpu` and the Gemini API for embeddings.
+- **Empty Recommendations**: Verify your `GEMINI_API_KEY` is valid and has not exhausted its quota.

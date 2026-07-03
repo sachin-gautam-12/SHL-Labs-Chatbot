@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import hashlib
 import numpy as np
 import faiss
 from typing import List, Dict, Any, Tuple, Optional
@@ -15,7 +16,7 @@ class AssessmentRetriever:
         self.embeddings_client = EmbeddingClient()
         self.catalog_loader = CatalogLoader()
         self.catalog: List[Dict[str, Any]] = []
-        self.index: Optional[faiss.IndexFlatL2] = None
+        self.index: Optional[faiss.IndexFlatIP] = None
         self.doc_map: Dict[int, Dict[str, Any]] = {}
         
         # Load catalog and initialize FAISS index
@@ -41,20 +42,51 @@ class AssessmentRetriever:
         )
         return doc_text
 
+    def _get_catalog_hash(self) -> str:
+        """Generates a hash of the current catalog to detect changes."""
+        catalog_str = json.dumps(self.catalog, sort_keys=True)
+        return hashlib.md5(catalog_str.encode()).hexdigest()
+
     def initialize_index(self) -> None:
         """Loads catalog, creates text document formats, and initializes the FAISS database."""
         self.catalog = self.catalog_loader.load_catalog()
         
+        if not self.catalog:
+            logger.error("Catalog is empty. FAISS index will not be built.")
+            return
+
         # Map indices to assessments
         self.doc_map = {idx: item for idx, item in enumerate(self.catalog)}
         
-        # If FAISS index exists and we are not forcing re-indexing, we load it
-        # However, to be robust if catalog changes, we can build it on startup or load saved one.
-        # We build it on startup to guarantee sync, but allow saving/loading.
+        # Implement index caching to prevent hitting Gemini API on every startup
+        hash_path = os.path.join(settings.DATA_DIR, "catalog_hash.txt")
+        current_hash = self._get_catalog_hash()
+        
+        if os.path.exists(settings.FAISS_INDEX_PATH) and os.path.exists(hash_path):
+            try:
+                with open(hash_path, "r") as f:
+                    saved_hash = f.read().strip()
+                if saved_hash == current_hash:
+                    logger.info("Catalog unchanged. Loading existing FAISS index from disk...")
+                    self.index = faiss.read_index(settings.FAISS_INDEX_PATH)
+                    return
+                else:
+                    logger.info("Catalog changed. Rebuilding FAISS index...")
+            except Exception as e:
+                logger.warning(f"Error reading FAISS cache. Rebuilding... ({e})")
+        else:
+            logger.info("FAISS index not found on disk. Building for the first time...")
+            
+        # Build new index
         texts = [self._create_document_text(item) for item in self.catalog]
         
         logger.info(f"Generating embeddings for {len(texts)} assessments...")
         embeddings = self.embeddings_client.embed_documents(texts)
+        
+        if not embeddings or len(embeddings) == 0:
+            logger.error("Failed to generate embeddings. FAISS index will not be initialized.")
+            return
+            
         embeddings_np = np.array(embeddings).astype("float32")
         
         dimension = embeddings_np.shape[1]
@@ -64,10 +96,12 @@ class AssessmentRetriever:
         faiss.normalize_L2(embeddings_np)
         self.index.add(embeddings_np)
         
-        # Save FAISS index
+        # Save FAISS index and hash
         try:
             os.makedirs(os.path.dirname(settings.FAISS_INDEX_PATH), exist_ok=True)
             faiss.write_index(self.index, settings.FAISS_INDEX_PATH)
+            with open(hash_path, "w") as f:
+                f.write(current_hash)
             logger.info(f"Saved FAISS index to {settings.FAISS_INDEX_PATH}")
         except Exception as e:
             logger.error(f"Failed to save FAISS index: {e}")
@@ -75,10 +109,16 @@ class AssessmentRetriever:
     def retrieve(self, query: str, top_k: int = 5) -> List[Tuple[Dict[str, Any], float]]:
         """Retrieves top_k relevant assessments matching the query string, returning (assessment, score)."""
         if not self.index:
-            logger.warning("FAISS index is not initialized. Initializing now...")
+            logger.warning("FAISS index is not initialized. Attempting initialization now...")
             self.initialize_index()
+            if not self.index:
+                logger.error("FAISS index initialization failed. Cannot retrieve documents.")
+                return []
 
         query_vector = self.embeddings_client.embed_query(query)
+        if not query_vector:
+            return []
+            
         query_np = np.array([query_vector]).astype("float32")
         faiss.normalize_L2(query_np)
 

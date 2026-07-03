@@ -52,8 +52,13 @@ class CatalogLoader:
             )
         }
         
+        # Skip scraping on Render to ensure fast startup and avoid blocking
+        if os.getenv("RENDER") == "true":
+            logger.info("Running in Render environment. Skipping web scraping for faster startup.")
+            return []
+            
         try:
-            response = requests.get(self.scraped_url, headers=headers, timeout=10)
+            response = requests.get(self.scraped_url, headers=headers, timeout=3)
             if response.status_code != 200:
                 logger.warning(f"SHL site returned status code {response.status_code}. Scraping aborted.")
                 return []
