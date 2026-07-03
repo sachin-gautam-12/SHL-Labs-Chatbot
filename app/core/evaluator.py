@@ -3,6 +3,7 @@ import time
 import logging
 from typing import List, Dict, Any
 from app.models.request import Message
+from app.config import settings
 from app.core.conversation import ConversationCoordinator
 from app.utils.report_generator import generate_pdf_report
 

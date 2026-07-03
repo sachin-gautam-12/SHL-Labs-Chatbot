@@ -3,7 +3,7 @@ import json
 import logging
 import numpy as np
 import faiss
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 from app.config import settings
 from app.core.embeddings import EmbeddingClient
 from app.core.catalog_loader import CatalogLoader

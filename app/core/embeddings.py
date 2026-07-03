@@ -4,8 +4,6 @@ import math
 import re
 from typing import List
 
-import google.generativeai as genai
-
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -21,6 +19,7 @@ class EmbeddingClient:
             if not settings.GEMINI_API_KEY:
                 raise ValueError("GEMINI_API_KEY must be provided")
 
+            import google.generativeai as genai
             genai.configure(api_key=settings.GEMINI_API_KEY)
 
             # Compatible model
@@ -70,7 +69,7 @@ class EmbeddingClient:
     def embed_query(self, text: str) -> List[float]:
 
         if self.embedding_type == "gemini":
-
+            import google.generativeai as genai
             response = genai.embed_content(
                 model=self.model_name,
                 content=text
@@ -92,11 +91,11 @@ class EmbeddingClient:
     ) -> List[List[float]]:
 
         if self.embedding_type == "gemini":
-
+            import google.generativeai as genai
             embeddings = []
 
             for text in texts:
-
+                import google.generativeai as genai
                 response = genai.embed_content(
                     model=self.model_name,
                     content=text
